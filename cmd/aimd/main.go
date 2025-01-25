@@ -20,7 +20,7 @@ func main() {
 	}
 
 	// DirectoryParser 생성
-	dirParser := parser.NewDirectoryParser(cfg.ExcludeDirs)
+	dirParser := parser.NewDirectoryParser(cfg.ExcludeDirs, false)
 
 	// 현재 디렉토리에서 파일 목록 가져오기
 	files, err := dirParser.Parse(".")

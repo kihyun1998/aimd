@@ -3,21 +3,23 @@ package parser
 import (
 	"os"
 	"path/filepath"
+
+	"github.com/kihyun1998/aimd/pkg/utils"
 )
 
 // DirectoryParser 구현체
 type directoryParser struct {
-	excludeDirs []string // 제외할 디렉토리 목록
+	excludeDirs   []string
+	includeHidden bool // 숨김 파일 포함 여부 추가
 }
 
-// 생성자 함수
-func NewDirectoryParser(excludeDirs []string) DirectoryParser {
+func NewDirectoryParser(excludeDirs []string, includeHidden bool) DirectoryParser {
 	return &directoryParser{
-		excludeDirs: excludeDirs,
+		excludeDirs:   excludeDirs,
+		includeHidden: includeHidden,
 	}
 }
 
-// Parse 구현 - 재귀적 디렉토리 탐색
 func (d *directoryParser) Parse(root string) ([]string, error) {
 	var files []string
 
@@ -26,7 +28,14 @@ func (d *directoryParser) Parse(root string) ([]string, error) {
 			return err
 		}
 
-		// 디렉토리면 제외 디렉토리인지 확인
+		// 숨김 파일/디렉토리 처리
+		if !d.includeHidden && utils.IsHidden(info.Name()) {
+			if info.IsDir() {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+
 		if info.IsDir() {
 			if d.isExcluded(info.Name()) {
 				return filepath.SkipDir
@@ -34,16 +43,11 @@ func (d *directoryParser) Parse(root string) ([]string, error) {
 			return nil
 		}
 
-		// 파일이면 목록에 추가
 		files = append(files, path)
 		return nil
 	})
 
-	if err != nil {
-		return nil, err
-	}
-
-	return files, nil
+	return files, err
 }
 
 // 파일 확장자 필터링
