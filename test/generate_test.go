@@ -1,9 +1,12 @@
 package test
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/kihyun1998/aimd/internal/generator"
+	"github.com/kihyun1998/aimd/internal/parser"
 )
 
 func TestTemplateProcessor(t *testing.T) {
@@ -53,6 +56,69 @@ func TestTemplateProcessor(t *testing.T) {
 				}
 				if got != tt.want {
 					t.Errorf("Execute() = %v, want %v", got, tt.want)
+				}
+			}
+		})
+	}
+}
+
+func TestMarkdownGenerator(t *testing.T) {
+	// 임시 디렉토리 및 파일 설정
+	tempDir := t.TempDir()
+	testFile := filepath.Join(tempDir, "test.go")
+	outputPath := filepath.Join(tempDir, "README.md")
+	testContent := "package main\n\nfunc main() {}"
+
+	if err := os.WriteFile(testFile, []byte(testContent), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	// 테스트용 파서 생성
+	fp := parser.NewFileParser()
+
+	// 테스트용 템플릿
+	testTemplate := "# Files\n{{range .Files}}## {{.Path}}\n```go\n{{.Content}}\n```\n{{end}}"
+
+	tests := []struct {
+		name     string
+		files    []string
+		template string
+		wantErr  bool
+	}{
+		{
+			name:     "정상 마크다운 생성",
+			files:    []string{testFile},
+			template: testTemplate,
+			wantErr:  false,
+		},
+		{
+			name:     "존재하지 않는 파일",
+			files:    []string{"없는파일.go"},
+			template: testTemplate,
+			wantErr:  true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mg := generator.NewMarkdownGenerator(fp, outputPath)
+
+			err := mg.SetTemplate(tt.template)
+			if err != nil {
+				t.Errorf("SetTemplate() error = %v", err)
+				return
+			}
+
+			err = mg.Generate(tt.files)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Generate() error = %v, wantErr %v", err, tt.wantErr)
+			}
+
+			if !tt.wantErr {
+				// 생성된 파일 확인
+				_, err := os.Stat(outputPath)
+				if err != nil {
+					t.Errorf("Generated file not found: %v", err)
 				}
 			}
 		})
