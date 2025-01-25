@@ -1,6 +1,5 @@
 # Project Documentation
 ## E:\aimd\cmd\aimd\main.go
-
 ```go
 package main
 
@@ -46,11 +45,10 @@ func main() {
 	mdGen := generator.NewMarkdownGenerator(fileParser, cfg.OutputPath)
 
 	// 기본 템플릿 설정
-	defaultTemplate := "# Project Documentation\n{{range .Files}}## {{.Path}}\n```\n{{.Content}}\n```\n{{end}}"
+	defaultTemplate := "# Project Documentation\n{{range .Files}}## {{.Path}}\n```{{if .Extension}}{{.Extension}}{{end}}\n{{.Content}}\n```\n{{end}}"
 	if err := mdGen.SetTemplate(defaultTemplate); err != nil {
 		log.Fatal(err)
 	}
-
 	// 마크다운 생성
 	if err := mdGen.Generate(typeFiles); err != nil {
 		log.Fatal(err)
@@ -108,11 +106,12 @@ func ParseFlags() (*Config, error) {
 
 ```
 ## E:\aimd\internal\generator\markdown.go
-```
+```go
 package generator
 
 import (
 	"os"
+	"path/filepath"
 
 	"github.com/kihyun1998/aimd/internal/parser"
 )
@@ -151,36 +150,40 @@ func (mg *markdownGenerator) SetTemplate(template string) error {
 func (mg *markdownGenerator) Generate(files []string) error {
 	var fileDataList []FileData
 
-	// 각 파일 처리
 	for _, file := range files {
 		content, err := mg.fileParser.ReadContent(file)
 		if err != nil {
 			return err
 		}
 
+		ext := filepath.Ext(file)
+		if ext != "" {
+			ext = ext[1:]
+		}
+
 		fileDataList = append(fileDataList, FileData{
-			Path:    file,
-			Content: content,
+			Path:      file,
+			Content:   content,
+			Extension: ext,
 		})
 	}
 
-	// 템플릿 실행
 	result, err := mg.processor.Execute(TemplateData{Files: fileDataList})
 	if err != nil {
 		return err
 	}
 
-	// 파일 저장
 	return os.WriteFile(mg.outputPath, []byte(result), 0644)
 }
 
 ```
 ## E:\aimd\internal\generator\template.go
-```
+```go
 package generator
 
 import (
 	"bytes"
+	"path/filepath"
 	"text/template"
 )
 
@@ -191,8 +194,9 @@ type templateProcessor struct {
 
 // 템플릿 데이터 구조체
 type FileData struct {
-	Path    string
-	Content string
+	Path      string
+	Content   string
+	Extension string
 }
 
 type TemplateData struct {
@@ -217,9 +221,17 @@ func (tp *templateProcessor) Execute(data TemplateData) (string, error) {
 	return buf.String(), nil
 }
 
+func (tp *templateProcessor) getExtension(path string) string {
+	ext := filepath.Ext(path)
+	if ext != "" {
+		return ext[1:]
+	}
+	return ""
+}
+
 ```
 ## E:\aimd\internal\parser\directory.go
-```
+```go
 package parser
 
 import (
@@ -310,7 +322,7 @@ func (d *directoryParser) isExcluded(dir string) bool {
 
 ```
 ## E:\aimd\internal\parser\error.go
-```
+```go
 package parser
 
 import "fmt"
@@ -334,7 +346,7 @@ func NewParseError(path string, err error) error {
 
 ```
 ## E:\aimd\internal\parser\file.go
-```
+```go
 package parser
 
 import (
@@ -370,7 +382,7 @@ func (fp *fileParser) ReadContent(path string) (string, error) {
 
 ```
 ## E:\aimd\internal\parser\parser.go
-```
+```go
 package parser
 
 type DirectoryParser interface {
@@ -385,7 +397,7 @@ type FileParser interface {
 
 ```
 ## E:\aimd\pkg\utils\file_utils.go
-```
+```go
 package utils
 
 import (
@@ -414,7 +426,7 @@ func FileExists(path string) bool {
 
 ```
 ## E:\aimd\test\generate_test.go
-```
+```go
 package test
 
 import (
@@ -544,7 +556,7 @@ func TestMarkdownGenerator(t *testing.T) {
 
 ```
 ## E:\aimd\test\parser_test.go
-```
+```go
 package test
 
 import (

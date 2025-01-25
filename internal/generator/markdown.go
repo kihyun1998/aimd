@@ -2,6 +2,7 @@ package generator
 
 import (
 	"os"
+	"path/filepath"
 
 	"github.com/kihyun1998/aimd/internal/parser"
 )
@@ -40,25 +41,28 @@ func (mg *markdownGenerator) SetTemplate(template string) error {
 func (mg *markdownGenerator) Generate(files []string) error {
 	var fileDataList []FileData
 
-	// 각 파일 처리
 	for _, file := range files {
 		content, err := mg.fileParser.ReadContent(file)
 		if err != nil {
 			return err
 		}
 
+		ext := filepath.Ext(file)
+		if ext != "" {
+			ext = ext[1:]
+		}
+
 		fileDataList = append(fileDataList, FileData{
-			Path:    file,
-			Content: content,
+			Path:      file,
+			Content:   content,
+			Extension: ext,
 		})
 	}
 
-	// 템플릿 실행
 	result, err := mg.processor.Execute(TemplateData{Files: fileDataList})
 	if err != nil {
 		return err
 	}
 
-	// 파일 저장
 	return os.WriteFile(mg.outputPath, []byte(result), 0644)
 }

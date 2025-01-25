@@ -2,6 +2,7 @@ package generator
 
 import (
 	"bytes"
+	"path/filepath"
 	"text/template"
 )
 
@@ -12,8 +13,9 @@ type templateProcessor struct {
 
 // 템플릿 데이터 구조체
 type FileData struct {
-	Path    string
-	Content string
+	Path      string
+	Content   string
+	Extension string
 }
 
 type TemplateData struct {
@@ -36,4 +38,12 @@ func (tp *templateProcessor) Execute(data TemplateData) (string, error) {
 		return "", err
 	}
 	return buf.String(), nil
+}
+
+func (tp *templateProcessor) getExtension(path string) string {
+	ext := filepath.Ext(path)
+	if ext != "" {
+		return ext[1:]
+	}
+	return ""
 }

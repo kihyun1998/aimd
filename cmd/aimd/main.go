@@ -42,11 +42,10 @@ func main() {
 	mdGen := generator.NewMarkdownGenerator(fileParser, cfg.OutputPath)
 
 	// 기본 템플릿 설정
-	defaultTemplate := "# Project Documentation\n{{range .Files}}## {{.Path}}\n```\n{{.Content}}\n```\n{{end}}"
+	defaultTemplate := "# Project Documentation\n{{range .Files}}## {{.Path}}\n```{{if .Extension}}{{.Extension}}{{end}}\n{{.Content}}\n```\n{{end}}"
 	if err := mdGen.SetTemplate(defaultTemplate); err != nil {
 		log.Fatal(err)
 	}
-
 	// 마크다운 생성
 	if err := mdGen.Generate(typeFiles); err != nil {
 		log.Fatal(err)
