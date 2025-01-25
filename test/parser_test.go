@@ -78,3 +78,54 @@ func TestGetFilesByTypes(t *testing.T) {
 		t.Errorf("GetFilesByTypes() = %v, want 2", len(filtered))
 	}
 }
+
+func TestFileParser(t *testing.T) {
+	// 임시 디렉토리 생성
+	tempDir := t.TempDir()
+
+	// 테스트 파일 생성
+	testContent := "테스트 컨텐츠"
+	testPath := filepath.Join(tempDir, "test.txt")
+	if err := os.WriteFile(testPath, []byte(testContent), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	tests := []struct {
+		name    string
+		path    string
+		want    string
+		wantErr bool
+	}{
+		{
+			name:    "정상 파일 읽기",
+			path:    testPath,
+			want:    testContent,
+			wantErr: false,
+		},
+		{
+			name:    "존재하지 않는 파일",
+			path:    "없는파일.txt",
+			want:    "",
+			wantErr: true,
+		},
+	}
+
+	fp := parser.NewFileParser()
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := fp.ReadContent(tt.path)
+
+			// 에러 검증
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ReadContent() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			// 결과 검증
+			if got != tt.want {
+				t.Errorf("ReadContent() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
