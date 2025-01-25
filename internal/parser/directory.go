@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 
@@ -27,8 +26,7 @@ func (d *directoryParser) Parse(root string) ([]string, error) {
 
 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			fmt.Printf("에러 발생: %v\n", err)
-			return err
+			return NewParseError(path, err)
 		}
 
 		if !d.includeHidden && utils.IsHidden(info.Name()) {
@@ -48,6 +46,10 @@ func (d *directoryParser) Parse(root string) ([]string, error) {
 		files = append(files, path)
 		return nil
 	})
+
+	if err != nil {
+		return nil, err
+	}
 
 	return files, err
 }
