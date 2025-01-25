@@ -1,0 +1,2 @@
+# aimd
+🚀 Generate markdown file.
