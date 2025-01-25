@@ -22,18 +22,26 @@ func main() {
 	// DirectoryParser 생성
 	dirParser := parser.NewDirectoryParser(cfg.ExcludeDirs, false)
 
-	// 현재 디렉토리에서 파일 목록 가져오기
-	files, err := dirParser.Parse(".")
+	// 현재 디렉토리 절대 경로 얻기
+	currentDir, err := os.Getwd()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// 각 확장자별로 필터링하여 출력
-	for _, ext := range cfg.FileTypes {
-		filtered := dirParser.FilterByExtenstion(files, ext)
-		fmt.Printf("\n%s 파일 목록:\n", ext)
-		for _, f := range filtered {
-			fmt.Printf("- %s\n", f)
-		}
+	// 1. 모든 파일 가져오기
+	allFiles, err := dirParser.Parse(currentDir) // "." 대신 currentDir 사용
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("\n전체 파일 목록:\n")
+	for _, f := range allFiles {
+		fmt.Printf("- %s\n", f)
+	}
+
+	// 2. 특정 타입의 파일만 필터링
+	typeFiles := dirParser.GetFilesByTypes(allFiles, cfg.FileTypes)
+	fmt.Printf("\n선택된 타입(%v)의 파일 목록:\n", cfg.FileTypes)
+	for _, f := range typeFiles {
+		fmt.Printf("- %s\n", f)
 	}
 }

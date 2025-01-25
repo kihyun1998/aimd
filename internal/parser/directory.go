@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -20,15 +21,16 @@ func NewDirectoryParser(excludeDirs []string, includeHidden bool) DirectoryParse
 	}
 }
 
+// 모든 파일 가져오기
 func (d *directoryParser) Parse(root string) ([]string, error) {
 	var files []string
 
 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
+			fmt.Printf("에러 발생: %v\n", err)
 			return err
 		}
 
-		// 숨김 파일/디렉토리 처리
 		if !d.includeHidden && utils.IsHidden(info.Name()) {
 			if info.IsDir() {
 				return filepath.SkipDir
@@ -50,12 +52,23 @@ func (d *directoryParser) Parse(root string) ([]string, error) {
 	return files, err
 }
 
-// 파일 확장자 필터링
-func (d *directoryParser) FilterByExtenstion(files []string, ext string) []string {
+// 특정 타입의 파일만 필터링 (마크다운 생성용)
+func (d *directoryParser) GetFilesByTypes(allFiles []string, types []string) []string {
+	if len(types) == 0 {
+		return allFiles
+	}
+
 	var filtered []string
-	for _, file := range files {
-		if filepath.Ext(file) == "."+ext {
-			filtered = append(filtered, file)
+	for _, file := range allFiles {
+		ext := filepath.Ext(file)
+		if ext != "" {
+			ext = ext[1:] // 점(.) 제거
+			for _, t := range types {
+				if ext == t {
+					filtered = append(filtered, file)
+					break
+				}
+			}
 		}
 	}
 	return filtered
