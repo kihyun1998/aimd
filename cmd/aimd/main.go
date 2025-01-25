@@ -1,11 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
 	"github.com/kihyun1998/aimd/internal/config"
+	"github.com/kihyun1998/aimd/internal/generator"
 	"github.com/kihyun1998/aimd/internal/parser"
 )
 
@@ -19,29 +19,36 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// DirectoryParser 생성
+	// 파서 생성
 	dirParser := parser.NewDirectoryParser(cfg.ExcludeDirs, false)
+	fileParser := parser.NewFileParser()
 
-	// 현재 디렉토리 절대 경로 얻기
+	// 현재 디렉토리 경로
 	currentDir, err := os.Getwd()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// 1. 모든 파일 가져오기
-	allFiles, err := dirParser.Parse(currentDir) // "." 대신 currentDir 사용
+	// 파일 목록 가져오기
+	allFiles, err := dirParser.Parse(currentDir)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("\n전체 파일 목록:\n")
-	for _, f := range allFiles {
-		fmt.Printf("- %s\n", f)
+
+	// 타입별 필터링
+	typeFiles := dirParser.GetFilesByTypes(allFiles, cfg.FileTypes)
+
+	// 마크다운 생성기 생성
+	mdGen := generator.NewMarkdownGenerator(fileParser, cfg.OutputPath)
+
+	// 기본 템플릿 설정
+	defaultTemplate := "# Project Documentation\n{{range .Files}}## {{.Path}}\n```\n{{.Content}}\n```\n{{end}}"
+	if err := mdGen.SetTemplate(defaultTemplate); err != nil {
+		log.Fatal(err)
 	}
 
-	// 2. 특정 타입의 파일만 필터링
-	typeFiles := dirParser.GetFilesByTypes(allFiles, cfg.FileTypes)
-	fmt.Printf("\n선택된 타입(%v)의 파일 목록:\n", cfg.FileTypes)
-	for _, f := range typeFiles {
-		fmt.Printf("- %s\n", f)
+	// 마크다운 생성
+	if err := mdGen.Generate(typeFiles); err != nil {
+		log.Fatal(err)
 	}
 }

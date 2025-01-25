@@ -27,7 +27,7 @@ func SetUsage(programName string) {
 // 플래그 파싱
 func ParseFlags() (*Config, error) {
 	types := flag.String("type", "", "파일 확장자들 (쉼표로 구분)")
-	output := flag.String("out", "README.md", "출력 파일 경로")
+	output := flag.String("out", "CODE.md", "출력 파일 경로")
 	exclude := flag.String("exclude", "", "제외할 디렉토리들 (쉼표로 구분)")
 
 	flag.Parse()

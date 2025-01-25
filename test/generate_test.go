@@ -66,7 +66,7 @@ func TestMarkdownGenerator(t *testing.T) {
 	// 임시 디렉토리 및 파일 설정
 	tempDir := t.TempDir()
 	testFile := filepath.Join(tempDir, "test.go")
-	outputPath := filepath.Join(tempDir, "README.md")
+	outputPath := filepath.Join(tempDir, "CODE.md")
 	testContent := "package main\n\nfunc main() {}"
 
 	if err := os.WriteFile(testFile, []byte(testContent), 0644); err != nil {
