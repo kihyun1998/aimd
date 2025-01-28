@@ -14,10 +14,11 @@ type MarkdownGenerator interface {
 
 // 마크다운 생성기 구조체
 type markdownGenerator struct {
-	fileParser parser.FileParser
-	processor  *templateProcessor
-	outputPath string
-	rootDir    string
+	fileParser  parser.FileParser
+	processor   *templateProcessor
+	outputPath  string
+	rootDir     string
+	projectName string
 }
 
 // 생성자
@@ -27,10 +28,14 @@ func NewMarkdownGenerator(fp parser.FileParser, outputPath string) MarkdownGener
 		rootDir = ""
 	}
 
+	// 프로젝트 이름 추출
+	projectName := filepath.Base(rootDir)
+
 	return &markdownGenerator{
-		fileParser: fp,
-		outputPath: outputPath,
-		rootDir:    rootDir,
+		fileParser:  fp,
+		outputPath:  outputPath,
+		rootDir:     rootDir,
+		projectName: projectName,
 	}
 }
 
@@ -84,7 +89,12 @@ func (mg *markdownGenerator) Generate(files []string) error {
 		})
 	}
 
-	result, err := mg.processor.Execute(TemplateData{Files: fileDataList})
+	data := TemplateData{
+		ProjectName: mg.projectName,
+		Files:       fileDataList,
+	}
+
+	result, err := mg.processor.Execute(data)
 	if err != nil {
 		return err
 	}

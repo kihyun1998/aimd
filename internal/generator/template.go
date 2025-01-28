@@ -19,7 +19,8 @@ type FileData struct {
 }
 
 type TemplateData struct {
-	Files []FileData
+	ProjectName string
+	Files       []FileData
 }
 
 // 생성자 함수
