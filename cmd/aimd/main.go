@@ -4,9 +4,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/kihyun1998/aimd/internal/config"
-	"github.com/kihyun1998/aimd/internal/generator"
-	"github.com/kihyun1998/aimd/internal/parser"
+	"github.com/kihyun1998/codemd/internal/config"
+	"github.com/kihyun1998/codemd/internal/generator"
+	"github.com/kihyun1998/codemd/internal/parser"
 )
 
 func main() {

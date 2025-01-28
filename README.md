@@ -1,69 +1,84 @@
-# AIMD (Auto Index Markdown Generator)
+# CodeMD (Code to Markdown)
 
-자동으로 프로젝트의 디렉토리 구조를 분석하여 마크다운 문서를 생성하는 도구입니다.
+CodeMD는 프로젝트의 소스 코드를 자동으로 마크다운 문서로 변환하는 CLI 도구입니다.
 
-## 기능
-- 지정된 확장자의 파일만 필터링
-- 특정 디렉토리 제외 가능
-- 커스텀 출력 경로 지정
+## 주요 기능
 
-## 빌드 방법
+- 다양한 프로그래밍 언어 파일 지원
+- 재귀적 디렉토리 탐색
+- 확장자 기반 파일 필터링
+- 커스텀 템플릿 지원
+- 숨김 파일/디렉토리 처리
 
-```bash
-# 프로젝트 클론
-git clone https://github.com/kihyun1998/aimd.git
-
-# 프로젝트 디렉토리로 이동
-cd aimd
-
-# 빌드 
-go build -o aimd ./cmd/aimd
-```
-
-## 사용법
+## 설치 방법
 
 ```bash
-# 기본 사용법
-aimd -type go,java
-
-# 출력 경로 지정
-aimd -type go -out docs/index.md
-
-# 특정 디렉토리 제외
-aimd -type go -exclude vendor,node_modules
+go get github.com/kihyun1998/codemd
 ```
 
-## 프로세스 Flow
+## 사용 방법
 
-```mermaid
-graph TD
-    A[시작] --> B[설정 파싱]
-    B --> C{필수 인자 확인}
-    C -->|실패| D[에러 출력]
-    D --> E[종료]
-    C -->|성공| F[디렉토리 스캔]
-    F --> G[파일 필터링]
-    G --> H[내용 분석]
-    H --> I[마크다운 생성]
-    I --> J[파일 저장]
-    J --> K[종료]
-
-    style A fill:#f9f,stroke:#333,stroke-width:2px
-    style K fill:#f9f,stroke:#333,stroke-width:2px
+기본 사용:
+```bash
+codemd -type go
 ```
+
+추가 옵션 사용:
+```bash
+codemd -type go,java -exclude vendor,node_modules -out docs/CODE.md
+```
+
+### 옵션 설명
+
+- `-type`: 처리할 파일 확장자 (필수, 쉼표로 구분)
+- `-out`: 출력 파일 경로 (기본값: CODE.md)
+- `-exclude`: 제외할 디렉토리 (선택, 쉼표로 구분)
 
 ## 프로젝트 구조
+
 ```
-aimd/
+codemd/
 ├── cmd/
-│   └── aimd/                # 실행 파일 디렉토리
-│       └── main.go         
+│   └── codemd/            # 실행 파일 디렉토리
+│       └── main.go        # 메인 진입점
 ├── internal/
-│   ├── config/             
-│   ├── generator/           
-│   └── parser/             
+│   ├── config/            # 설정 관련
+│   ├── generator/         # 마크다운 생성
+│   └── parser/           # 파싱 관련
 ├── pkg/
-│   └── utils/              
-└── test/
-    └── testdata/           
+│   └── utils/            # 유틸리티
+└── test/                 # 테스트 코드
 ```
+
+## 개발 환경
+
+- Go 1.20 이상
+- 모듈 기반 의존성 관리
+
+## 테스트
+
+전체 테스트 실행:
+```bash
+go test ./...
+```
+
+특정 패키지 테스트:
+```bash
+go test ./internal/parser
+```
+
+## 라이선스
+
+MIT License
+
+## 기여하기
+
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 작성자
+
+- kihyun1998

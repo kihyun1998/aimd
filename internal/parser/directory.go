@@ -4,7 +4,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/kihyun1998/aimd/pkg/utils"
+	"github.com/kihyun1998/codemd/pkg/utils"
 )
 
 // DirectoryParser 구현체

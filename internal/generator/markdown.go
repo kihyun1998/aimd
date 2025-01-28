@@ -4,7 +4,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/kihyun1998/aimd/internal/parser"
+	"github.com/kihyun1998/codemd/internal/parser"
 )
 
 type MarkdownGenerator interface {

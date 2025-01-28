@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/kihyun1998/aimd/internal/parser"
+	"github.com/kihyun1998/codemd/internal/parser"
 )
 
 func TestDirectoryParser(t *testing.T) {
