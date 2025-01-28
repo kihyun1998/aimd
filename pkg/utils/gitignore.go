@@ -85,22 +85,26 @@ func (gi *GitIgnore) ShouldIgnore(path string) bool {
 	// 윈도우 경로를 유닉스 스타일로 변환
 	relPath = filepath.ToSlash(relPath)
 
-	// 마지막 매칭 결과 (기본값은 false)
-	ignored := false
+	var (
+		isMatched bool              //현재 패턴이 매칭되었는지
+		lastMatch *GitIgnorePattern //마지막 매칭 패턴
+	)
 
 	// 모든 패턴을 순회하면서 검사
 	for _, pattern := range gi.patterns {
 		if pattern.matches(relPath) {
-			// 네거티브 패턴은 이전 매칭을 뒤집음
-			if pattern.isNegative {
-				ignored = false
-			} else {
-				ignored = true
-			}
+			isMatched = true
+			lastMatch = pattern
 		}
 	}
 
-	return ignored
+	if !isMatched || lastMatch == nil {
+		return false
+	}
+
+	// 마지막으로 매칭된 패턴이 네거티브면 무시안하는 걸로
+	// 네거티브가 아니면 무시
+	return !lastMatch.isNegative
 }
 
 // matches는 패턴이 주어진 경로와 매칭되는지 확인

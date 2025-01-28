@@ -39,15 +39,16 @@ build/
 }
 
 // TestGitIgnorePatterns는 다양한 gitignore 패턴 매칭을 테스트
+// TestGitIgnorePatterns는 다양한 gitignore 패턴 매칭을 테스트
 func TestGitIgnorePatterns(t *testing.T) {
 	tests := []struct {
-		name    string
-		pattern string
-		paths   map[string]bool // 경로와 예상되는 무시 여부
+		name     string
+		patterns []string // 패턴 배열로 수정
+		paths    map[string]bool
 	}{
 		{
-			name:    "기본 글로브 패턴",
-			pattern: "*.log",
+			name:     "기본 글로브 패턴",
+			patterns: []string{"*.log"},
 			paths: map[string]bool{
 				"test.log":     true,
 				"dir/test.log": true,
@@ -56,8 +57,8 @@ func TestGitIgnorePatterns(t *testing.T) {
 			},
 		},
 		{
-			name:    "디렉토리 패턴",
-			pattern: "node_modules/",
+			name:     "디렉토리 패턴",
+			patterns: []string{"node_modules/"},
 			paths: map[string]bool{
 				"node_modules/file.js":     true,
 				"node_modules/dir/file.js": true,
@@ -66,17 +67,21 @@ func TestGitIgnorePatterns(t *testing.T) {
 			},
 		},
 		{
-			name:    "네거티브 패턴",
-			pattern: "!important.log",
+			name: "네거티브 패턴",
+			patterns: []string{
+				"*.log",          // 먼저 모든 로그 파일을 무시
+				"!important.log", // important.log는 예외 처리
+			},
 			paths: map[string]bool{
-				"important.log":     false,
-				"dir/important.log": false,
-				"notimportant.log":  true,
+				"important.log":     false, // 무시하지 않음
+				"test.log":          true,  // 무시함
+				"dir/important.log": false, // 하위 디렉토리도 무시하지 않음
+				"logs/test.log":     true,  // 다른 로그 파일은 무시
 			},
 		},
 		{
-			name:    "중첩 디렉토리 패턴",
-			pattern: "**/temp/**",
+			name:     "중첩 디렉토리 패턴",
+			patterns: []string{"**/temp/**"},
 			paths: map[string]bool{
 				"temp/file.txt":            true,
 				"dir/temp/file.txt":        true,
@@ -84,14 +89,34 @@ func TestGitIgnorePatterns(t *testing.T) {
 				"template/file.txt":        false,
 			},
 		},
+		{
+			name: "복잡한 네거티브 패턴",
+			patterns: []string{
+				"*.log",
+				"!important.log",
+				"trace.*",
+			},
+			paths: map[string]bool{
+				"debug.log":     true,  // *.log에 의해 무시
+				"important.log": false, // !important.log에 의해 예외 처리
+				"trace.log":     true,  // trace.*에 의해 다시 무시
+				"trace.txt":     true,  // trace.*에 의해 무시
+			},
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// 임시 디렉토리에 .gitignore 생성
+			// 임시 디렉토리 생성
 			tmpDir := t.TempDir()
 			gitignorePath := filepath.Join(tmpDir, ".gitignore")
-			err := os.WriteFile(gitignorePath, []byte(tt.pattern), 0644)
+
+			// 패턴들을 .gitignore 파일에 작성
+			content := ""
+			for _, pattern := range tt.patterns {
+				content += pattern + "\n"
+			}
+			err := os.WriteFile(gitignorePath, []byte(content), 0644)
 			if err != nil {
 				t.Fatalf(".gitignore 파일 생성 실패: %v", err)
 			}
@@ -103,7 +128,7 @@ func TestGitIgnorePatterns(t *testing.T) {
 
 			for path, shouldIgnore := range tt.paths {
 				fullPath := filepath.Join(tmpDir, path)
-				// 디렉토리 생성이 필요한 경우
+				// 디렉토리 생성
 				dir := filepath.Dir(fullPath)
 				if err := os.MkdirAll(dir, 0755); err != nil {
 					t.Fatalf("디렉토리 생성 실패: %v", err)
@@ -116,7 +141,7 @@ func TestGitIgnorePatterns(t *testing.T) {
 				got := gi.ShouldIgnore(fullPath)
 				if got != shouldIgnore {
 					t.Errorf("패턴 %q에 대해 경로 %q의 결과가 잘못됨. got %v, want %v",
-						tt.pattern, path, got, shouldIgnore)
+						tt.patterns, path, got, shouldIgnore)
 				}
 			}
 		})
