@@ -20,7 +20,7 @@ func main() {
 	}
 
 	// 파서 생성
-	dirParser := parser.NewDirectoryParser(cfg.ExcludeDirs, false)
+	dirParser := parser.NewDirectoryParser(cfg.ExcludeDirs, false, cfg.UseGitIgnore)
 	fileParser := parser.NewFileParser()
 
 	// 현재 디렉토리 경로

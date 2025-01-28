@@ -11,12 +11,21 @@ import (
 type directoryParser struct {
 	excludeDirs   []string
 	includeHidden bool // 숨김 파일 포함 여부 추가
+	gitIgnore     *utils.GitIgnore
 }
 
-func NewDirectoryParser(excludeDirs []string, includeHidden bool) DirectoryParser {
+func NewDirectoryParser(excludeDirs []string, includeHidden bool, useGitIgnore bool) DirectoryParser {
+	var gitIgnore *utils.GitIgnore
+	if useGitIgnore {
+		if gi, err := utils.NewGitIgnore(".gitignore"); err == nil {
+			gitIgnore = gi
+		}
+	}
+
 	return &directoryParser{
 		excludeDirs:   excludeDirs,
 		includeHidden: includeHidden,
+		gitIgnore:     gitIgnore,
 	}
 }
 
@@ -29,6 +38,15 @@ func (d *directoryParser) Parse(root string) ([]string, error) {
 			return NewParseError(path, err)
 		}
 
+		// .gitIgnore 규칙 체크
+		if d.gitIgnore != nil && d.gitIgnore.ShouldIgnore(path) {
+			if info.IsDir() {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+
+		// 숨김 파일 체크
 		if !d.includeHidden && utils.IsHidden(info.Name()) {
 			if info.IsDir() {
 				return filepath.SkipDir

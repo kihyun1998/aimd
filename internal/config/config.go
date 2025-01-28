@@ -8,9 +8,10 @@ import (
 )
 
 type Config struct {
-	FileTypes   []string
-	OutputPath  string
-	ExcludeDirs []string
+	FileTypes    []string
+	OutputPath   string
+	ExcludeDirs  []string
+	UseGitIgnore bool
 }
 
 // Usage 메시지 설정
@@ -29,6 +30,7 @@ func ParseFlags() (*Config, error) {
 	types := flag.String("type", "", "파일 확장자들 (쉼표로 구분)")
 	output := flag.String("out", "CODE.md", "출력 파일 경로")
 	exclude := flag.String("exclude", "", "제외할 디렉토리들 (쉼표로 구분)")
+	useGitIgnore := flag.Bool("gitignore", false, ".gitignore 파일 사용 여부 (기본값: false)")
 
 	flag.Parse()
 
@@ -38,8 +40,9 @@ func ParseFlags() (*Config, error) {
 	}
 
 	return &Config{
-		FileTypes:   strings.Split(*types, ","),
-		OutputPath:  *output,
-		ExcludeDirs: strings.Split(*exclude, ","),
+		FileTypes:    strings.Split(*types, ","),
+		OutputPath:   *output,
+		ExcludeDirs:  strings.Split(*exclude, ","),
+		UseGitIgnore: *useGitIgnore,
 	}, nil
 }
