@@ -12,12 +12,21 @@ type directoryParser struct {
 	excludeDirs   []string
 	includeHidden bool // 숨김 파일 포함 여부 추가
 	gitIgnore     *utils.GitIgnore
+	rootDir       string
 }
 
 func NewDirectoryParser(excludeDirs []string, includeHidden bool, useGitIgnore bool) DirectoryParser {
 	var gitIgnore *utils.GitIgnore
+
+	// 현재 작업 디렉토리 획득
+	rootDir, err := os.Getwd()
+	if err != nil {
+		rootDir = "."
+	}
+
 	if useGitIgnore {
-		if gi, err := utils.NewGitIgnore(".gitignore"); err == nil {
+		gitIgnorePath := filepath.Join(rootDir, ".gitignore")
+		if gi, err := utils.NewGitIgnore(gitIgnorePath); err == nil {
 			gitIgnore = gi
 		}
 	}
@@ -26,6 +35,7 @@ func NewDirectoryParser(excludeDirs []string, includeHidden bool, useGitIgnore b
 		excludeDirs:   excludeDirs,
 		includeHidden: includeHidden,
 		gitIgnore:     gitIgnore,
+		rootDir:       rootDir,
 	}
 }
 
@@ -39,11 +49,13 @@ func (d *directoryParser) Parse(root string) ([]string, error) {
 		}
 
 		// .gitIgnore 규칙 체크
-		if d.gitIgnore != nil && d.gitIgnore.ShouldIgnore(path) {
-			if info.IsDir() {
-				return filepath.SkipDir
+		if d.gitIgnore != nil {
+			if d.gitIgnore.ShouldIgnore(path) {
+				if info.IsDir() {
+					return filepath.SkipDir
+				}
+				return nil
 			}
-			return nil
 		}
 
 		// 숨김 파일 체크
@@ -69,7 +81,7 @@ func (d *directoryParser) Parse(root string) ([]string, error) {
 		return nil, err
 	}
 
-	return files, err
+	return files, nil
 }
 
 // 특정 타입의 파일만 필터링 (마크다운 생성용)
