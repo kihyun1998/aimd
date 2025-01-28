@@ -40,6 +40,16 @@ cd codemd
 
 # 빌드 
 go build -o codemd ./cmd/codemd
+
+# 다양한 환경에서 빌드(cmd)
+GOOS=linux GOARCH=amd64 go build -o codemd-linux-amd64 ./cmd/codemd
+GOOS=darwin GOARCH=amd64 go build -o codemd-darwin-amd64 ./cmd/codemd
+GOOS=windows GOARCH=amd64 go build -o codemd-windows-amd64.exe ./cmd/codemd
+
+# 다양한 환경에서 빌드(powershell)
+$env:GOOS="linux"; $env:GOARCH="amd64"; go build -o ./build/codemd-linux-amd64 ./cmd/codemd
+$env:GOOS="darwin"; $env:GOARCH="amd64"; go build -o ./build/codemd-darwin-amd64 ./cmd/codemd
+$env:GOOS="windows"; $env:GOARCH="amd64"; go build -o ./build/codemd-windows-amd64.exe ./cmd/codemd
 ```
 
 ### Go Install 사용
