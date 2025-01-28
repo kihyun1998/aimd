@@ -17,14 +17,36 @@ type markdownGenerator struct {
 	fileParser parser.FileParser
 	processor  *templateProcessor
 	outputPath string
+	rootDir    string
 }
 
 // 생성자
 func NewMarkdownGenerator(fp parser.FileParser, outputPath string) MarkdownGenerator {
+	rootDir, err := os.Getwd()
+	if err != nil {
+		rootDir = ""
+	}
+
 	return &markdownGenerator{
 		fileParser: fp,
 		outputPath: outputPath,
+		rootDir:    rootDir,
 	}
+}
+
+// 상대 경로 변환 함수
+func (mg *markdownGenerator) toRelativePath(absolutePath string) string {
+	if mg.rootDir == "" {
+		return absolutePath
+	}
+
+	relativePath, err := filepath.Rel(mg.rootDir, absolutePath)
+	if err != nil {
+		return absolutePath
+	}
+
+	// 윈도우 스타일 경로를 UNIX 스타일 경로로 변환
+	return filepath.ToSlash(relativePath)
 }
 
 // 템플릿 설정
@@ -52,8 +74,11 @@ func (mg *markdownGenerator) Generate(files []string) error {
 			ext = ext[1:]
 		}
 
+		// 상대 경로로 변환
+		relativePath := mg.toRelativePath(file)
+
 		fileDataList = append(fileDataList, FileData{
-			Path:      file,
+			Path:      relativePath,
 			Content:   content,
 			Extension: ext,
 		})
