@@ -50,7 +50,7 @@ func TestDirectoryParser(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			p := parser.NewDirectoryParser(tt.excludeDirs, tt.includeHidden)
+			p := parser.NewDirectoryParser(tt.excludeDirs, tt.includeHidden, true)
 
 			got, err := p.Parse(tempDir)
 			if err != nil {
@@ -66,7 +66,7 @@ func TestDirectoryParser(t *testing.T) {
 }
 
 func TestGetFilesByTypes(t *testing.T) {
-	p := parser.NewDirectoryParser(nil, false)
+	p := parser.NewDirectoryParser(nil, false, true)
 	files := []string{
 		"test1.go",
 		"test2.go",
