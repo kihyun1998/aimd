@@ -39,7 +39,7 @@ git clone https://github.com/kihyun1998/codemd.git
 cd codemd
 
 # 빌드 
-go build -o codemd ./cmd/codemd
+go build -o codemd.exe ./cmd/codemd
 
 # 다양한 환경에서 빌드(cmd)
 GOOS=linux GOARCH=amd64 go build -o codemd-linux-amd64 ./cmd/codemd
