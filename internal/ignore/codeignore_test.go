@@ -263,3 +263,128 @@ node_modules/
 		}
 	}
 }
+
+func TestFlutterPluginPattern(t *testing.T) {
+	// 임시 디렉토리 생성
+	tmpDir := t.TempDir()
+
+	// 테스트용 디렉토리 구조 생성
+	testFiles := map[string]bool{
+		"lib/plugin.dart":             false, // 추적해야 함
+		"lib/src/implementation.dart": false, // 추적해야 함
+		"windows/plugin.cpp":          false, // 추적해야 함
+		"windows/include/header.h":    false, // 추적해야 함
+		"android/build.gradle":        true,  // 무시해야 함
+		"ios/plugin.podspec":          true,  // 무시해야 함
+		"linux/CMakeLists.txt":        true,  // 무시해야 함
+		"macos/plugin.swift":          true,  // 무시해야 함
+		"web/plugin.js":               true,  // 무시해야 함
+		"pubspec.yaml":                true,  // 무시해야 함
+		"README.md":                   true,  // 무시해야 함
+	}
+
+	// .codeignore 파일 생성
+	codeignoreContent := `# 모든 파일을 무시
+*
+# lib 디렉토리와 windows 디렉토리만 추적
+!lib/
+!windows/
+# 기타 플랫폼 디렉토리는 무시
+android/
+ios/
+linux/
+macos/
+web/
+`
+	codeignorePath := filepath.Join(tmpDir, ".codeignore")
+	err := os.WriteFile(codeignorePath, []byte(codeignoreContent), 0644)
+	if err != nil {
+		t.Fatalf(".codeignore 파일 생성 실패: %v", err)
+	}
+
+	// 테스트 파일 구조 생성
+	for path := range testFiles {
+		fullPath := filepath.Join(tmpDir, path)
+		dir := filepath.Dir(fullPath)
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			t.Fatalf("디렉토리 생성 실패: %v", err)
+		}
+		if err := os.WriteFile(fullPath, []byte("test"), 0644); err != nil {
+			t.Fatalf("파일 생성 실패: %v", err)
+		}
+	}
+
+	// CodeIgnore 인스턴스 생성
+	ignorer, err := NewCodeIgnore(codeignorePath)
+	if err != nil {
+		t.Fatalf("NewCodeIgnore 실패: %v", err)
+	}
+
+	// 각 파일에 대해 무시 규칙 테스트
+	for path, shouldIgnore := range testFiles {
+		fullPath := filepath.Join(tmpDir, path)
+		got := ignorer.ShouldIgnore(fullPath)
+		if got != shouldIgnore {
+			t.Errorf("경로 %q에 대한 결과가 잘못됨. got %v, want %v",
+				path, got, shouldIgnore)
+		}
+	}
+}
+
+// 중첩된 디렉토리 패턴 테스트
+func TestNestedDirectoryPatterns(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	testFiles := map[string]bool{
+		"lib/plugin.dart":                  false, // 추적
+		"lib/generated/temp.dart":          true,  // 무시
+		"windows/plugin.cpp":               false, // 추적
+		"windows/build/temp.cpp":           true,  // 무시
+		"windows/include/header.h":         false, // 추적
+		"windows/include/generated/temp.h": true,  // 무시
+	}
+
+	// .codeignore 파일 생성
+	codeignoreContent := `# 기본 추적 제외
+*
+# 필요한 디렉토리 추적
+!lib/
+!windows/
+# 생성된 파일들 무시
+**/generated/**
+**/build/**
+`
+	codeignorePath := filepath.Join(tmpDir, ".codeignore")
+	err := os.WriteFile(codeignorePath, []byte(codeignoreContent), 0644)
+	if err != nil {
+		t.Fatalf(".codeignore 파일 생성 실패: %v", err)
+	}
+
+	// 테스트 파일 구조 생성
+	for path := range testFiles {
+		fullPath := filepath.Join(tmpDir, path)
+		dir := filepath.Dir(fullPath)
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			t.Fatalf("디렉토리 생성 실패: %v", err)
+		}
+		if err := os.WriteFile(fullPath, []byte("test"), 0644); err != nil {
+			t.Fatalf("파일 생성 실패: %v", err)
+		}
+	}
+
+	// CodeIgnore 인스턴스 생성
+	ignorer, err := NewCodeIgnore(codeignorePath)
+	if err != nil {
+		t.Fatalf("NewCodeIgnore 실패: %v", err)
+	}
+
+	// 각 파일에 대해 무시 규칙 테스트
+	for path, shouldIgnore := range testFiles {
+		fullPath := filepath.Join(tmpDir, path)
+		got := ignorer.ShouldIgnore(fullPath)
+		if got != shouldIgnore {
+			t.Errorf("경로 %q에 대한 결과가 잘못됨. got %v, want %v",
+				path, got, shouldIgnore)
+		}
+	}
+}
