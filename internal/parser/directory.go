@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/kihyun1998/codemd/internal/ignore"
 	"github.com/kihyun1998/codemd/pkg/utils"
 )
 
@@ -11,30 +12,29 @@ import (
 type directoryParser struct {
 	excludeDirs   []string
 	includeHidden bool // 숨김 파일 포함 여부 추가
-	gitIgnore     *utils.GitIgnore
+	ignorer       ignore.Ignorer
 	rootDir       string
 }
 
-func NewDirectoryParser(excludeDirs []string, includeHidden bool, useGitIgnore bool) DirectoryParser {
-	var gitIgnore *utils.GitIgnore
+func NewDirectoryParser(excludeDirs []string, includeHidden bool, useCodeIgnore bool) DirectoryParser {
+	var ignorer ignore.Ignorer
 
-	// 현재 작업 디렉토리 획득
 	rootDir, err := os.Getwd()
 	if err != nil {
 		rootDir = "."
 	}
 
-	if useGitIgnore {
-		gitIgnorePath := filepath.Join(rootDir, ".gitignore")
-		if gi, err := utils.NewGitIgnore(gitIgnorePath); err == nil {
-			gitIgnore = gi
+	if useCodeIgnore {
+		codeIgnorePath := filepath.Join(rootDir, ".codeignore")
+		if ci, err := ignore.NewCodeIgnore(codeIgnorePath); err == nil {
+			ignorer = ci
 		}
 	}
 
 	return &directoryParser{
 		excludeDirs:   excludeDirs,
 		includeHidden: includeHidden,
-		gitIgnore:     gitIgnore,
+		ignorer:       ignorer,
 		rootDir:       rootDir,
 	}
 }
@@ -48,9 +48,9 @@ func (d *directoryParser) Parse(root string) ([]string, error) {
 			return NewParseError(path, err)
 		}
 
-		// .gitIgnore 규칙 체크
-		if d.gitIgnore != nil {
-			if d.gitIgnore.ShouldIgnore(path) {
+		// .codeignore 규칙 체크
+		if d.ignorer != nil {
+			if d.ignorer.ShouldIgnore(path) {
 				if info.IsDir() {
 					return filepath.SkipDir
 				}

@@ -1,4 +1,4 @@
-package utils
+package ignore
 
 import (
 	"os"
@@ -6,13 +6,13 @@ import (
 	"testing"
 )
 
-// TestNewGitIgnore는 GitIgnore 인스턴스 생성을 테스트
-func TestNewGitIgnore(t *testing.T) {
+// TestNewCodeIgnore는 CodeIgnore 인스턴스 생성을 테스트
+func TestNewCodeIgnore(t *testing.T) {
 	// 임시 디렉토리 생성
 	tmpDir := t.TempDir()
 
-	// 테스트용 .gitignore 파일 생성
-	gitignorePath := filepath.Join(tmpDir, ".gitignore")
+	// 테스트용 .codeignore 파일 생성
+	codeignorePath := filepath.Join(tmpDir, ".codeignore")
 	content := `# 주석
 *.log
 /node_modules/
@@ -20,30 +20,35 @@ func TestNewGitIgnore(t *testing.T) {
 build/
 *.tmp
 `
-	err := os.WriteFile(gitignorePath, []byte(content), 0644)
+	err := os.WriteFile(codeignorePath, []byte(content), 0644)
 	if err != nil {
-		t.Fatalf(".gitignore 파일 생성 실패: %v", err)
+		t.Fatalf(".codeignore 파일 생성 실패: %v", err)
 	}
 
-	// GitIgnore 인스턴스 생성 테스트
-	gi, err := NewGitIgnore(gitignorePath)
+	// CodeIgnore 인스턴스 생성 테스트
+	ignorer, err := NewCodeIgnore(codeignorePath)
 	if err != nil {
-		t.Fatalf("NewGitIgnore 실패: %v", err)
+		t.Fatalf("NewCodeIgnore 실패: %v", err)
+	}
+
+	// CodeIgnore로 타입 변환
+	ci, ok := ignorer.(*CodeIgnore)
+	if !ok {
+		t.Fatal("Ignorer를 *CodeIgnore로 변환 실패")
 	}
 
 	// 패턴 수 확인
 	expectedPatterns := 5 // 주석 제외
-	if len(gi.patterns) != expectedPatterns {
-		t.Errorf("패턴 수가 일치하지 않음. got %d, want %d", len(gi.patterns), expectedPatterns)
+	if len(ci.patterns) != expectedPatterns {
+		t.Errorf("패턴 수가 일치하지 않음. got %d, want %d", len(ci.patterns), expectedPatterns)
 	}
 }
 
-// TestGitIgnorePatterns는 다양한 gitignore 패턴 매칭을 테스트
-// TestGitIgnorePatterns는 다양한 gitignore 패턴 매칭을 테스트
-func TestGitIgnorePatterns(t *testing.T) {
+// TestCodeIgnorePatterns는 다양한 codeignore 패턴 매칭을 테스트
+func TestCodeIgnorePatterns(t *testing.T) {
 	tests := []struct {
 		name     string
-		patterns []string // 패턴 배열로 수정
+		patterns []string
 		paths    map[string]bool
 	}{
 		{
@@ -109,21 +114,21 @@ func TestGitIgnorePatterns(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// 임시 디렉토리 생성
 			tmpDir := t.TempDir()
-			gitignorePath := filepath.Join(tmpDir, ".gitignore")
+			codeignorePath := filepath.Join(tmpDir, ".codeignore")
 
-			// 패턴들을 .gitignore 파일에 작성
+			// 패턴들을 .codeignore 파일에 작성
 			content := ""
 			for _, pattern := range tt.patterns {
 				content += pattern + "\n"
 			}
-			err := os.WriteFile(gitignorePath, []byte(content), 0644)
+			err := os.WriteFile(codeignorePath, []byte(content), 0644)
 			if err != nil {
-				t.Fatalf(".gitignore 파일 생성 실패: %v", err)
+				t.Fatalf(".codeignore 파일 생성 실패: %v", err)
 			}
 
-			gi, err := NewGitIgnore(gitignorePath)
+			ignorer, err := NewCodeIgnore(codeignorePath)
 			if err != nil {
-				t.Fatalf("NewGitIgnore 실패: %v", err)
+				t.Fatalf("NewCodeIgnore 실패: %v", err)
 			}
 
 			for path, shouldIgnore := range tt.paths {
@@ -138,7 +143,7 @@ func TestGitIgnorePatterns(t *testing.T) {
 					t.Fatalf("테스트 파일 생성 실패: %v", err)
 				}
 
-				got := gi.ShouldIgnore(fullPath)
+				got := ignorer.ShouldIgnore(fullPath)
 				if got != shouldIgnore {
 					t.Errorf("패턴 %q에 대해 경로 %q의 결과가 잘못됨. got %v, want %v",
 						tt.patterns, path, got, shouldIgnore)
@@ -148,8 +153,8 @@ func TestGitIgnorePatterns(t *testing.T) {
 	}
 }
 
-// TestGitIgnoreEdgeCases는 특수한 경우의 gitignore 패턴을 테스트
-func TestGitIgnoreEdgeCases(t *testing.T) {
+// TestCodeIgnoreEdgeCases는 특수한 경우의 codeignore 패턴을 테스트
+func TestCodeIgnoreEdgeCases(t *testing.T) {
 	tests := []struct {
 		name     string
 		patterns []string
@@ -183,23 +188,23 @@ func TestGitIgnoreEdgeCases(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tmpDir := t.TempDir()
-			gitignorePath := filepath.Join(tmpDir, ".gitignore")
+			codeignorePath := filepath.Join(tmpDir, ".codeignore")
 			content := ""
 			for _, pattern := range tt.patterns {
 				content += pattern + "\n"
 			}
-			err := os.WriteFile(gitignorePath, []byte(content), 0644)
+			err := os.WriteFile(codeignorePath, []byte(content), 0644)
 			if err != nil {
-				t.Fatalf(".gitignore 파일 생성 실패: %v", err)
+				t.Fatalf(".codeignore 파일 생성 실패: %v", err)
 			}
 
-			gi, err := NewGitIgnore(gitignorePath)
+			ignorer, err := NewCodeIgnore(codeignorePath)
 			if err != nil {
-				t.Fatalf("NewGitIgnore 실패: %v", err)
+				t.Fatalf("NewCodeIgnore 실패: %v", err)
 			}
 
 			fullPath := filepath.Join(tmpDir, tt.path)
-			got := gi.ShouldIgnore(fullPath)
+			got := ignorer.ShouldIgnore(fullPath)
 			if got != tt.want {
 				t.Errorf("%q 경로에 대한 결과가 잘못됨. got %v, want %v",
 					tt.path, got, tt.want)
@@ -208,8 +213,8 @@ func TestGitIgnoreEdgeCases(t *testing.T) {
 	}
 }
 
-// TestGitIgnoreWithDirectoryParser는 DirectoryParser와의 통합을 테스트
-func TestGitIgnoreWithDirectoryParser(t *testing.T) {
+// TestCodeIgnoreWithDirectoryParser는 DirectoryParser와의 통합을 테스트
+func TestCodeIgnoreWithDirectoryParser(t *testing.T) {
 	// 임시 디렉토리 구조 생성
 	tmpDir := t.TempDir()
 	files := map[string]bool{ // 경로와 무시 여부
@@ -220,14 +225,14 @@ func TestGitIgnoreWithDirectoryParser(t *testing.T) {
 		"node_modules/index.js": true,
 	}
 
-	// .gitignore 파일 생성
-	gitignoreContent := `*.log
+	// .codeignore 파일 생성
+	codeignoreContent := `*.log
 build/
 node_modules/
 `
-	err := os.WriteFile(filepath.Join(tmpDir, ".gitignore"), []byte(gitignoreContent), 0644)
+	err := os.WriteFile(filepath.Join(tmpDir, ".codeignore"), []byte(codeignoreContent), 0644)
 	if err != nil {
-		t.Fatalf(".gitignore 파일 생성 실패: %v", err)
+		t.Fatalf(".codeignore 파일 생성 실패: %v", err)
 	}
 
 	// 테스트 파일 생성
@@ -242,16 +247,16 @@ node_modules/
 		}
 	}
 
-	// GitIgnore 인스턴스 생성
-	gi, err := NewGitIgnore(filepath.Join(tmpDir, ".gitignore"))
+	// CodeIgnore 인스턴스 생성
+	ignorer, err := NewCodeIgnore(filepath.Join(tmpDir, ".codeignore"))
 	if err != nil {
-		t.Fatalf("NewGitIgnore 실패: %v", err)
+		t.Fatalf("NewCodeIgnore 실패: %v", err)
 	}
 
-	// 각 파일에 대해 GitIgnore 규칙 테스트
+	// 각 파일에 대해 CodeIgnore 규칙 테스트
 	for path, shouldIgnore := range files {
 		fullPath := filepath.Join(tmpDir, path)
-		got := gi.ShouldIgnore(fullPath)
+		got := ignorer.ShouldIgnore(fullPath)
 		if got != shouldIgnore {
 			t.Errorf("경로 %q에 대한 결과가 잘못됨. got %v, want %v",
 				path, got, shouldIgnore)
