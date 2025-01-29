@@ -1,12 +1,14 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 
 	"github.com/kihyun1998/codemd/internal/config"
 	"github.com/kihyun1998/codemd/internal/generator"
 	"github.com/kihyun1998/codemd/internal/parser"
+	"github.com/kihyun1998/codemd/internal/version"
 )
 
 func main() {
@@ -17,6 +19,12 @@ func main() {
 	cfg, err := config.ParseFlags()
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	// 버전 출력
+	if cfg.ShowVersion {
+		fmt.Println(version.GetVersionInfo())
+		os.Exit(0)
 	}
 
 	// 파서 생성
