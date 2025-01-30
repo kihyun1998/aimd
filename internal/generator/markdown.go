@@ -1,10 +1,12 @@
 package generator
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 
 	"github.com/kihyun1998/codemd/internal/parser"
+	"github.com/kihyun1998/codemd/internal/structure"
 )
 
 type MarkdownGenerator interface {
@@ -68,6 +70,12 @@ func (mg *markdownGenerator) SetTemplate(template string) error {
 func (mg *markdownGenerator) Generate(files []string) error {
 	var fileDataList []FileData
 
+	// 프로젝트 구조 생성
+	tree := structure.NewDirectoryTree(mg.rootDir)
+	if err := tree.BuildTree(files); err != nil {
+		return fmt.Errorf("프로젝트 구조 생성 실패: %w", err)
+	}
+
 	for _, file := range files {
 		content, err := mg.fileParser.ReadContent(file)
 		if err != nil {
@@ -91,6 +99,7 @@ func (mg *markdownGenerator) Generate(files []string) error {
 
 	data := TemplateData{
 		ProjectName: mg.projectName,
+		Structure:   tree.ToMarkdown(),
 		Files:       fileDataList,
 	}
 

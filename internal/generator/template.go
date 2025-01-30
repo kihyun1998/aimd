@@ -20,6 +20,7 @@ type FileData struct {
 
 type TemplateData struct {
 	ProjectName string
+	Structure   string
 	Files       []FileData
 }
 

@@ -50,7 +50,8 @@ func main() {
 	mdGen := generator.NewMarkdownGenerator(fileParser, cfg.OutputPath)
 
 	// 기본 템플릿 설정
-	defaultTemplate := "# {{.ProjectName}}\n{{range .Files}}## {{.Path}}\n```{{if .Extension}}{{.Extension}}{{end}}\n{{.Content}}\n```\n{{end}}"
+	defaultTemplate := "# {{.ProjectName}}\n{{.Structure}}{{range .Files}}## {{.Path}}\n```{{if .Extension}}{{.Extension}}{{end}}\n{{.Content}}\n```\n{{end}}"
+
 	if err := mdGen.SetTemplate(defaultTemplate); err != nil {
 		log.Fatal(err)
 	}
