@@ -47,8 +47,8 @@ func ParseFlags() (*Config, error) {
 	flag.StringVar(&exclude, "exclude", "", "제외할 디렉토리들 (쉼표로 구분)")
 	flag.StringVar(&exclude, "e", "", "제외할 디렉토리들 (쉼표로 구분) (짧은 버전)")
 
-	flag.BoolVar(&useCodeIgnore, "codeignore", true, ".codeignore 파일 사용 여부")
-	flag.BoolVar(&useCodeIgnore, "c", true, ".codeignore 파일 사용 여부 (짧은 버전)")
+	flag.BoolVar(&useCodeIgnore, "codeignore", false, ".codeignore 파일 사용 여부")
+	flag.BoolVar(&useCodeIgnore, "c", false, ".codeignore 파일 사용 여부 (짧은 버전)")
 
 	flag.BoolVar(&showVersion, "version", false, "버전 정보 출력")
 	flag.BoolVar(&showVersion, "v", false, "버전 정보 출력 (짧은 버전)")

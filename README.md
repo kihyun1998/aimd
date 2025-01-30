@@ -17,15 +17,16 @@ graph TD
     B --> C{필수 인자 확인}
     C -->|실패| D[에러 출력]
     D --> E[종료]
-    C -->|성공| F[디렉토리 스캔]
-    F --> G[파일 필터링]
-    G --> H[내용 분석]
-    H --> I[마크다운 생성]
-    I --> J[파일 저장]
-    J --> K[종료]
-
-    style A fill:#f9f,stroke:#333,stroke-width:2px
-    style K fill:#f9f,stroke:#333,stroke-width:2px
+    C -->|성공| F[버전 체크]
+    F -->|버전 출력 요청| G[버전 출력]
+    G --> E
+    F -->|일반 실행| H[디렉토리 스캔]
+    H --> I[codeignore 처리]
+    I --> J[파일 필터링]
+    J --> K[내용 분석]
+    K --> L[마크다운 생성]
+    L --> M[파일 저장]
+    M --> E[종료]
 ```
 
 ## 설치 방법
@@ -62,6 +63,11 @@ go install github.com/kihyun1998/codemd@latest
 ### 기본 사용
 ```bash
 codemd -type go
+
+# 버전 확인
+codemd -v
+# 또는
+codemd --version
 ```
 
 ### 추가 옵션 사용
@@ -77,41 +83,12 @@ codemd -type go,java,py -out docs/CODE.md
 ```
 
 ### 옵션 설명
-- `-type`: 처리할 파일 확장자 (필수, 쉼표로 구분)
-- `-out`: 출력 파일 경로 (기본값: CODE.md)
-- `-exclude`: 제외할 디렉토리 (선택, 쉼표로 구분)
+- `-type, -t`: 처리할 파일 확장자 (필수, 쉼표로 구분)
+- `-out, -o`: 출력 파일 경로 (기본값: CODE.md)
+- `-exclude, -e`: 제외할 디렉토리 (선택, 쉼표로 구분)
+- `-version, -v`: 버전 정보 출력
+- `-codeignore, -c`: .codeignore 파일 사용 여부 (기본값: false)
 
-## 프로젝트 구조
-
-```
-codemd/
-├── cmd/
-│   └── codemd/            # 실행 파일 디렉토리
-│       └── main.go        # 메인 진입점
-├── internal/
-│   ├── config/            # 설정 관련
-│   │   ├── config.go      # 설정 구조체
-│   │   └── loader.go      # 설정 로더
-│   ├── generator/         # 마크다운 생성
-│   │   ├── markdown.go    # 마크다운 생성기
-│   │   └── template.go    # 템플릿 처리
-│   └── parser/           # 파싱 관련
-│       ├── errors.go      # 커스텀 에러 정의
-│       ├── file.go        # 파일 파서
-│       ├── directory.go   # 디렉토리 파서
-│       └── parser.go      # 인터페이스 정의
-├── pkg/
-│   └── utils/            # 유틸리티
-│       ├── file_utils.go  # 파일 관련
-│       └── string_utils.go # 문자열 관련
-└── test/                 # 테스트 코드
-    ├── testdata/         # 테스트 데이터
-    └── parser_test.go    # 파서 테스트
-```
-
-## 개발 환경
-- Go 1.20 이상
-- 모듈 기반 의존성 관리
 
 ## 테스트 실행
 ```bash
