@@ -5,7 +5,7 @@ var (
 	// 메이저 버전
 	Major = "1"
 	// 마이너 버전
-	Minor = "1"
+	Minor = "2"
 	// 패치 버전
 	Patch = "0"
 )
