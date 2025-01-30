@@ -62,13 +62,14 @@ go install github.com/kihyun1998/codemd@latest
 
 ### 기본 사용
 ```bash
+# 모든 파일 처리
+codemd
+
+# 특정 확장자만 처리
 codemd -type go
 
 # 버전 확인
 codemd -v
-# 또는
-codemd --version
-```
 
 ### 추가 옵션 사용
 ```bash
@@ -83,7 +84,7 @@ codemd -type go,java,py -out docs/CODE.md
 ```
 
 ### 옵션 설명
-- `-type, -t`: 처리할 파일 확장자 (필수, 쉼표로 구분)
+- `-type, -t`: 처리할 파일 확장자 (선택, 쉼표로 구분)
 - `-out, -o`: 출력 파일 경로 (기본값: CODE.md)
 - `-exclude, -e`: 제외할 디렉토리 (선택, 쉼표로 구분)
 - `-version, -v`: 버전 정보 출력
