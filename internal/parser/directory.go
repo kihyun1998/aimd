@@ -86,7 +86,7 @@ func (d *directoryParser) Parse(root string) ([]string, error) {
 
 // 특정 타입의 파일만 필터링 (마크다운 생성용)
 func (d *directoryParser) GetFilesByTypes(allFiles []string, types []string) []string {
-	if len(types) == 0 {
+	if len(types) == 0 || (len(types) == 1 && types[0] == "") {
 		return allFiles
 	}
 

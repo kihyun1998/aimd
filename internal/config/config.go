@@ -37,7 +37,6 @@ func ParseFlags() (*Config, error) {
 		showVersion   bool
 	)
 
-	// 긴 버전과 짧은 버전의 플래그 모두 지원
 	flag.StringVar(&types, "type", "", "파일 확장자들 (쉼표로 구분)")
 	flag.StringVar(&types, "t", "", "파일 확장자들 (쉼표로 구분) (짧은 버전)")
 
@@ -58,11 +57,6 @@ func ParseFlags() (*Config, error) {
 	// -v 또는 -version 플래그만 있는 경우
 	if showVersion && len(os.Args) == 2 {
 		return &Config{ShowVersion: true}, nil
-	}
-
-	// -t 또는 -type 플래그가 없으면 에러
-	if types == "" {
-		return nil, fmt.Errorf("필수 플래그 누락: -type 또는 -t")
 	}
 
 	return &Config{
