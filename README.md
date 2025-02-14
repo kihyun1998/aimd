@@ -8,6 +8,10 @@
 - 커스텀 출력 경로 지정
 - 재귀적 디렉토리 탐색
 - 숨김 파일/디렉토리 처리
+- 대용량 파일 자동 분할 (NEW)
+  - 설정 가능한 최대 파일 크기
+  - 자동 파일 분할 및 넘버링
+  - 메모리 효율적 처리
 
 ## 프로세스 Flow
 
@@ -25,8 +29,11 @@ graph TD
     I --> J[파일 필터링]
     J --> K[내용 분석]
     K --> L[마크다운 생성]
-    L --> M[파일 저장]
-    M --> E[종료]
+    L --> M{파일 크기 체크}
+    M -->|초과| N[파일 분할]
+    M -->|정상| O[단일 파일 저장]
+    N --> E
+    O --> E
 ```
 
 ## 설치 방법
@@ -52,12 +59,6 @@ $env:GOOS="linux"; $env:GOARCH="amd64"; go build -o ./build/codemd-linux-amd64 .
 $env:GOOS="darwin"; $env:GOARCH="amd64"; go build -o ./build/codemd-darwin-amd64 ./cmd/codemd
 $env:GOOS="windows"; $env:GOARCH="amd64"; go build -o ./build/codemd-windows-amd64.exe ./cmd/codemd
 ```
-
-### Go Install 사용
-```bash
-go install github.com/kihyun1998/codemd@latest
-```
-
 ## 사용법
 
 ### 기본 사용
@@ -70,6 +71,7 @@ codemd -type go
 
 # 버전 확인
 codemd -v
+```
 
 ### 추가 옵션 사용
 ```bash
@@ -81,6 +83,10 @@ codemd -type go -exclude vendor,node_modules
 
 # 여러 확장자 지정
 codemd -type go,java,py -out docs/CODE.md
+
+# 파일 크기 제한 설정 (MB 단위)
+codemd -type go -maxsize 20
+codemd -t go -m 15
 ```
 
 ### 옵션 설명
@@ -89,16 +95,21 @@ codemd -type go,java,py -out docs/CODE.md
 - `-exclude, -e`: 제외할 디렉토리 (선택, 쉼표로 구분)
 - `-version, -v`: 버전 정보 출력
 - `-codeignore, -c`: .codeignore 파일 사용 여부 (기본값: false)
+- `-maxsize, -m`: 출력 파일의 최대 크기 (MB 단위, 기본값: 10)
 
-
-## 테스트 실행
+### 파일 분할 예시
+큰 프로젝트의 경우 출력 파일이 자동으로 분할됩니다:
 ```bash
-# 전체 테스트
-go test ./...
+# 20MB 크기로 파일 분할 설정
+codemd -type go -maxsize 20
 
-# 특정 패키지 테스트
-go test ./internal/parser
+# 결과 파일:
+# CODE1.md (20MB)
+# CODE2.md (20MB)
+# CODE3.md (나머지)
 ```
+
+[이전 테스트 실행 섹션...]
 
 ## 기여하기
 1. Fork the Project

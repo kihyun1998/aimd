@@ -26,7 +26,7 @@ type markdownGenerator struct {
 }
 
 // 생성자
-func NewMarkdownGenerator(fp parser.FileParser, outputPath string) MarkdownGenerator {
+func NewMarkdownGenerator(fp parser.FileParser, outputPath string, maxFileSizeMB int64) MarkdownGenerator {
 	rootDir, err := os.Getwd()
 	if err != nil {
 		rootDir = ""
@@ -40,7 +40,7 @@ func NewMarkdownGenerator(fp parser.FileParser, outputPath string) MarkdownGener
 		outputPath:  outputPath,
 		rootDir:     rootDir,
 		projectName: projectName,
-		splitter:    file.NewFileSplitter(10),
+		splitter:    file.NewFileSplitter(maxFileSizeMB),
 	}
 }
 

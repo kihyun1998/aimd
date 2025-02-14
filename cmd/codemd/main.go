@@ -47,7 +47,7 @@ func main() {
 	typeFiles := dirParser.GetFilesByTypes(allFiles, cfg.FileTypes)
 
 	// 마크다운 생성기 생성
-	mdGen := generator.NewMarkdownGenerator(fileParser, cfg.OutputPath)
+	mdGen := generator.NewMarkdownGenerator(fileParser, cfg.OutputPath, cfg.MaxFileSizeMB)
 
 	// 기본 템플릿 설정
 	defaultTemplate := "# {{.ProjectName}}\n{{.Structure}}{{range .Files}}## {{.Path}}\n```{{if .Extension}}{{.Extension}}{{end}}\n{{.Content}}\n```\n{{end}}"
