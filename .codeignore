@@ -2,4 +2,6 @@ build/
 
 CODE*
 codemd.exe
-
+codemd-windows-amd64.exe
+go.sum
+go.mod
