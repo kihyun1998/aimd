@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/kihyun1998/codemd/internal/file"
 	"github.com/kihyun1998/codemd/internal/parser"
 	"github.com/kihyun1998/codemd/internal/structure"
 )
@@ -21,6 +22,7 @@ type markdownGenerator struct {
 	outputPath  string
 	rootDir     string
 	projectName string
+	splitter    file.FileSplitter
 }
 
 // 생성자
@@ -38,6 +40,7 @@ func NewMarkdownGenerator(fp parser.FileParser, outputPath string) MarkdownGener
 		outputPath:  outputPath,
 		rootDir:     rootDir,
 		projectName: projectName,
+		splitter:    file.NewFileSplitter(10),
 	}
 }
 
@@ -108,5 +111,5 @@ func (mg *markdownGenerator) Generate(files []string) error {
 		return err
 	}
 
-	return os.WriteFile(mg.outputPath, []byte(result), 0644)
+	return mg.splitter.SplitIfNeeded(result, mg.outputPath)
 }
